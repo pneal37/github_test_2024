@@ -9,9 +9,53 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
+### Source New Setup
 
 ```{r}
 source("setup.R")
 ```
 
+# Coding Exercise
+
+### Source Data
+
+```{r}
+data("knz_bison")
+```
+
+## 1) New Age Column
+
+```{r}
+knz_bison <- knz_bison %>% 
+  mutate(bison_age = rec_year - animal_yob)
+```
+
+## 2) Function for Weight
+
+```{r}
+bison_weight_filter <- function(knz_bison, weight_threshold) {
+  heavy_bison <- knz_bison %>% 
+    filter(animal_weight >= weight_threshold)
+  return(heavy_bison)
+}
+
+```
+
+## 3) Visualization and Analysis
+
+```{r}
+knz_bison %>% 
+  select(c(animal_sex, animal_weight)) %>% 
+  ggplot() +
+  geom_boxplot(aes(x = animal_sex, y = animal_weight)) +
+  labs(title = "Weight Distribution of Bison by Sex",
+       x = "Sex",
+       y = "Weight (lbs)")
+knz_bison %>% 
+  levene_test(animal_weight ~ animal_sex)
+#Since the null hypothesis of the Levene test is that the data has equal variance, we see that the variances of our groups are not equal (p<0.05)
+knz_bison %>% 
+  t_test(animal_weight ~ animal_sex, var.equal = FALSE, detailed = TRUE) #Welch t-test b/c unequal variance
+```
+
+Given the p-value <0.05, there is a statistically significant difference in bison weight between males and females.
